@@ -1,0 +1,34 @@
+###   Copies the most recent file dropped by department data steward into the load folder   ###
+
+import os
+import shutil
+
+# Find newest file in folder named 'original'
+pathFind = r"O:\311\original"
+os.chdir(pathFind)
+filesSort = sorted(os.listdir(os.getcwd()), key=os.path.getmtime)
+newestSort = filesSort[-1]
+
+# Copy newest file into the 'load' folder (this has to be newer than what will be
+# replaced in the 'load' folder or else it will give an I/O error)
+src = newestSort
+dst = r"O:\311\load"
+shutil.copy(src, dst)
+
+# Find newest file in the 'load' folder (FME has to pull from one location)
+os.chdir(dst)
+files = sorted(os.listdir(os.getcwd()), key=os.path.getmtime)
+newLoadFile = files[-1]
+
+# Remove old file so that new file can be added with the new name
+oldFile = r"O:\311\load\report.xlsx"
+newName = "report.xlsx"
+os.remove(oldFile)
+os.rename(newLoadFile, newName)
+
+# Print to test if the right stuff got moved into the right folder
+print newestSort," was moved to",dst," and renamed to",newName
+print " "
+
+# Run batch file to open FME workflow
+os.system(r"O:\Scripts\MoveDatasets\311.bat")
